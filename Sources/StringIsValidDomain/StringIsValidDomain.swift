@@ -45,23 +45,23 @@ extension String {
     let sldMatches = Regex(#"(.*)\.(([a-z0-9]+)(\.[a-z0-9]+))"#).allMatches(in: data).flatMap(
       \.groups
     ).map(\.value)
-    var labels: [Substring] = []
+    var labels: [String] = []
 
     if sldMatches.count > 1 {
       if sldMap.contains(sldMatches[1]) {
-        labels = sldMatches[0].split(separator: ".", omittingEmptySubsequences: false)
+        labels = sldMatches[0].split(separator: ".", omittingEmptySubsequences: false).map {String($0)}
       }
     }
 
     if labels.count == 0 {
-      labels = data.split(separator: ".", omittingEmptySubsequences: false)
+      labels = data.split(separator: ".", omittingEmptySubsequences: false).map {String($0)}
 
       if labels.count <= 1 {
         return false
       }
 
-      let tld = labels.popLast()
-      if !Regex(#"^(?:xn--)?(?!^\d+$)[a-z0-9]+$"#).isMatched(by: String(tld!)) {
+      let tld = labels.popLast()!
+      if !Regex(#"^(?:xn--)?(?!^\d+$)[a-z0-9]+$"#).isMatched(by: tld) {
         return false
       }
     }
@@ -79,8 +79,8 @@ extension String {
 
       let validLabelChars = label == labels.last ? #"^([a-zA-Z0-9-]+)$"# : #"^([a-zA-Z0-9-_]+)$"#
 
-      let doubleDashCount = Regex(#"--"#).allMatches(in: String(label)).map(\.value).count
-      let xnDashCount = Regex(#"xn--"#).allMatches(in: String(label)).map(\.value).count
+      let doubleDashCount = Regex(#"--"#).allMatches(in: label).map(\.value).count
+      let xnDashCount = Regex(#"xn--"#).allMatches(in: label).map(\.value).count
 
       if doubleDashCount != xnDashCount {
         return false
@@ -89,7 +89,7 @@ extension String {
       var isValidLabelChars: Bool
 
       do {
-        isValidLabelChars = try Regex(validLabelChars).isMatched(by: String(label))
+        isValidLabelChars = try Regex(validLabelChars).isMatched(by: label)
       } catch {
         isValidLabelChars = false
       }
